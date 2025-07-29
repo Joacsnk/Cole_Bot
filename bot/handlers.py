@@ -5,7 +5,7 @@ from telegram.constants import ParseMode
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE): # Mensagem de /start
     if update.message: # Caso não seja None
-       await update.message.reply_text("Olá! Eu sou o Cole, seu assistente de compras 🛒.\n\nUse /add para adicionar itens à sua lista.")
+       await update.message.reply_text("Olá! Eu sou Cole, seu assistente de compras 🛒.\n\nVou te ajudar a fazer compras fazendo listas\n\n✌️😁")
     else:
         print("update.message está None")
 
@@ -24,11 +24,11 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE): # Adiciona it
     
 
     if not item:
-        await update.message.reply_text("❌ Você precisa informar o item. Ex: /add leite")
+        await update.message.reply_text("🚫 Você precisa informar o item.\n\nEx: /add leite")
         return
 
     add_item(user_id, item) 
-    await update.message.reply_text(f"✅ Item '{item}' adicionado à sua lista.")
+    await update.message.reply_text(f"📝 Item '{item}' adicionado à sua lista.")
     
 add_handler = CommandHandler("add", add)
 
@@ -43,10 +43,10 @@ async def list_items(update: Update, context: ContextTypes.DEFAULT_TYPE): # List
     items = get_items(user_id)
 
     if not items:
-        await update.message.reply_text("Sua lista de compras está vazia.")
+        await update.message.reply_text("⚠️ Sua lista de compras está vazia.")
         return
     
-    text = "📝 *Sua Lista de Compras:*\n\n" # Lista numerada em um index
+    text = "📒 *Sua Lista de Compras:*\n\n" # Lista numerada em um index
     for index, (db_id, item) in enumerate(items, start=1):
         text += f"{index}. {item}\n"
 
@@ -67,7 +67,7 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
 
     if not context.args or not context.args[0].isdigit():
-        await update.message.reply_text("Use o número da lista. Ex: /remove 2")
+        await update.message.reply_text("🚫 Use o número da lista.\n\nEx: '/remove 2'")
         return
 
     index = int(context.args[0])
@@ -76,16 +76,16 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     index_map = context.user_data.get("index_map", {})
 
     if index not in index_map:
-        await update.message.reply_text("Esse número não existe na sua lista atual.")
+        await update.message.reply_text("🚫 Esse índice não existe na sua lista atual.")
         return
 
     real_id = index_map[index]
     sucesso = remove_item(user_id, real_id)
 
     if sucesso:
-        await update.message.reply_text(f"Item {index} removido com sucesso.")
+        await update.message.reply_text(f"🫡 Item {index} removido com sucesso.")
     else:
-        await update.message.reply_text("Erro ao remover o item.")
+        await update.message.reply_text("⚠️ Erro ao remover o item.")
 
 
 remove_handler = CommandHandler("remove", remove)
@@ -98,6 +98,6 @@ async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE): # Limpa tod
 
     user_id = update.effective_user.id
     clear_list(user_id)
-    await update.message.reply_text("Sua lista foi apagada com sucesso.")
+    await update.message.reply_text("❎ Sua lista foi apagada com sucesso.")
 
 clear_handler = CommandHandler("clear", clear)
