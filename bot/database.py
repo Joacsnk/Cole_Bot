@@ -30,3 +30,25 @@ def list_items(user_id: int):
         cursor = conn.cursor()
         cursor.execute("SELECT id, item FROM shopping_list WHERE user_id = ?", (user_id,))
         return cursor.fetchall()
+
+# Pega todos os itens
+def get_items(user_id: int):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, item FROM shopping_list WHERE user_id = ?", (user_id,))
+        return cursor.fetchall()
+    
+# Remove itens
+def remove_item(user_id: int, item_id: int):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM shopping_list WHERE user_id = ? AND id = ?", (user_id, item_id))
+        conn.commit()
+        return cursor.rowcount > 0
+
+# Limpa a lista
+def clear_list(user_id: int):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM shopping_list WHERE user_id = ?", (user_id,))
+        conn.commit()

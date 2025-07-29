@@ -1,8 +1,8 @@
 from telegram.ext import ApplicationBuilder # Build principal do bot
 from dotenv import load_dotenv # Carregar .env
 import os
-from handlers import start_handler # Comandos 
-from database import init_db
+from handlers import start_handler, add_handler, list_handler, remove_handler, clear_handler # Comandos 
+from database import init_db 
 
 # Carrega as variáveis do arquivo .env
 load_dotenv()
@@ -23,6 +23,10 @@ def main():
     print("✅ Build do bot iniciado")
 
     app.add_handler(start_handler) # Comando /start
+    app.add_handler(add_handler) # Comando /add
+    app.add_handler(list_handler) # Comando /list
+    app.add_handler(remove_handler) # Comando /remove
+    app.add_handler(clear_handler) # Comando /clear
     print("✅ Comandos ativos")
 
     os.system("cls")
