@@ -45,16 +45,20 @@ async def list_items(update: Update, context: ContextTypes.DEFAULT_TYPE): # List
     if not items:
         await update.message.reply_text("Sua lista de compras está vazia.")
         return
+    
+    text = "📝 *Sua Lista de Compras:*\n\n" # Lista numerada em um index
+    for index, (db_id, item) in enumerate(items, start=1):
+        text += f"{index}. {item}\n"
 
-    text = "📝 *Sua Lista de Compras:*\n\n"
-    for id, item in items:
-        text += f"{id}. {item}\n"
+    if context.user_data is None:
+        context.user_data = {}
+    context.user_data["index_map"] = {i + 1: item[0] for i, item in enumerate(items)}
 
     await update.message.reply_text(text, parse_mode=ParseMode.MARKDOWN)
 
 list_handler = CommandHandler("list", list_items)
 
-async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE): # Remoeve um item
+async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     
     if not update.message or not update.effective_user:
         print("❌ update.message ou update.effective_user está None") # Caso esteja None
@@ -63,16 +67,26 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE): # Remoeve 
     user_id = update.effective_user.id
 
     if not context.args or not context.args[0].isdigit():
-        await update.message.reply_text("Use o ID do item. Ex: /remove 3")
+        await update.message.reply_text("Use o número da lista. Ex: /remove 2")
         return
 
-    item_id = int(context.args[0])
-    sucesso = remove_item(user_id, item_id)
+    index = int(context.args[0])
+    if context.user_data is None:
+        context.user_data = {}
+    index_map = context.user_data.get("index_map", {})
+
+    if index not in index_map:
+        await update.message.reply_text("Esse número não existe na sua lista atual.")
+        return
+
+    real_id = index_map[index]
+    sucesso = remove_item(user_id, real_id)
 
     if sucesso:
-        await update.message.reply_text(f"Item {item_id} removido.")
+        await update.message.reply_text(f"Item {index} removido com sucesso.")
     else:
-        await update.message.reply_text("Item não encontrado.")
+        await update.message.reply_text("Erro ao remover o item.")
+
 
 remove_handler = CommandHandler("remove", remove)
 
