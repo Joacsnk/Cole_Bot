@@ -2,6 +2,7 @@ from telegram import Update # Update do chat (mensagem recebida)
 from telegram.ext import CommandHandler, ContextTypes # Comandos e configurações extras
 from database import add_item, get_items, remove_item, clear_list
 from telegram.constants import ParseMode 
+from shopping_list import buscar_precos_em_sites
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE): # Mensagem de /start
     if update.message: # Caso não seja None
@@ -31,7 +32,6 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE): # Adiciona it
     await update.message.reply_text(f"📝 Item '{item}' adicionado à sua lista.")
     
 add_handler = CommandHandler("add", add)
-
 
 async def list_items(update: Update, context: ContextTypes.DEFAULT_TYPE): # Lista todos os itens
     
@@ -87,7 +87,6 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE):
     else:
         await update.message.reply_text("⚠️ Erro ao remover o item.")
 
-
 remove_handler = CommandHandler("remove", remove)
 
 async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE): # Limpa toda a lista
@@ -101,3 +100,39 @@ async def clear(update: Update, context: ContextTypes.DEFAULT_TYPE): # Limpa tod
     await update.message.reply_text("❎ Sua lista foi apagada com sucesso.")
 
 clear_handler = CommandHandler("clear", clear)
+
+async def price(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message or not update.effective_user:
+        return
+
+    user_id = update.effective_user.id
+    items = get_items(user_id)
+
+    if not items:
+        await update.message.reply_text("⚠️ Sua lista está vazia.")
+        return
+
+    resposta = "📊 *Preços dos Itens:*\n\n"
+    total_geral = 0
+    total_considerado = 0
+
+    for _, nome in items:
+        precos = buscar_precos_em_sites(nome)
+        if precos:
+            resposta += f"🔹 *{nome.title()}*\n"
+            for site, valor in precos:
+                resposta += f"• {site}: R$ {valor:.2f}\n"
+                total_geral += valor
+                total_considerado += 1
+            resposta += "\n"
+        else:
+            resposta += f"🔸 *{nome.title()}*: 🤔 Nenhum preço encontrado\n\n"
+
+    if total_considerado > 0:
+        resposta += f"🧮 *Total da lista*: R$ {total_geral:.2f}"
+    else:
+        resposta += "😵 Nenhum preço encontrado nos sites."
+
+    await update.message.reply_text(resposta, parse_mode=ParseMode.MARKDOWN)
+
+price_handler = CommandHandler("price", price)

@@ -1,7 +1,7 @@
 from telegram.ext import ApplicationBuilder # Build principal do bot
 from dotenv import load_dotenv # Carregar .env
 import os
-from handlers import start_handler, add_handler, list_handler, remove_handler, clear_handler # Comandos 
+from handlers import start_handler, add_handler, list_handler, remove_handler, clear_handler, price_handler # Comandos 
 from database import init_db 
 from telegram import BotCommand
 
@@ -28,7 +28,8 @@ def main():
             BotCommand("add", "🛒 Adicionar itens à lista de compras"),
             BotCommand("list", "📃 Ver seus itens da lista de compras"),
             BotCommand("remove", "⛔ Remover itens da lista de compras"),
-            BotCommand("clear", "❎ Limpar sua lista de compras inteira")
+            BotCommand("clear", "❎ Limpar sua lista de compras inteira"),
+            BotCommand("price", "💲 Veja o preço dos itens em tempo real")
         ]
         await app.bot.set_my_commands(commands)
     print("✅ Menu integrado")
@@ -41,6 +42,7 @@ def main():
     app.add_handler(list_handler) # Comando /list
     app.add_handler(remove_handler) # Comando /remove
     app.add_handler(clear_handler) # Comando /clear
+    app.add_handler(price_handler) # Comando /price
     print("✅ Comandos ativos")
 
     app.post_init = set_bot_commands
